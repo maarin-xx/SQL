@@ -1,0 +1,49 @@
+// Используя функции, получите список всех сотрудников у которых в имени есть буква 'b' (без учета регистра).
+select * from employees where lower(first_name) like '%b%';
+//Используя функции, получите список всех сотрудников у которых в имени содержатся минимум 2 буквы 'a'
+select * from employees where instr(lower(first_name), 'a', 1,2)>0;
+//Получите первое слово из имени департамента, для тех департаментов, у которых название состоит больше, чем из одного слова
+select substr(department_name,1,instr(department_name,' ')) as part_department_name from departments where REGEXP_LIKE(department_name, '.+[[:space:]].*');
+//Получите имена сотрудников без первой и последней буквы в имени
+select substr(first_name, 2, length(first_name)-2) from employees;
+//Получите список всех сотрудников, у которых в значении job_id после знака '_' как минимум 3 символа, но при этом это значение после '_' не равно 'CLERK'
+select * from employees where instr(job_id,'_')<=length(job_id)-3 and job_id not like '%_CLERK';
+//Получите список всех сотрудников, которые пришли на работу в первый день любого месяца
+select * from employees where hire_date=round(hire_date, 'mm');
+//Получите список всех сотрудников, которые пришли на работу в 2008ом году
+select * from employees where to_char(hire_date, 'YYYY') = 2008;
+select * from employees where extract( year from hire_date) = 2008; 
+//Покажите завтрашнюю дату в формате: Tomorrow is Second day of January
+select 'Tomorrow is '||to_char(sysdate+1, 'fmDdTHSP')||' day of '||to_char(sysdate+1, 'Month') from dual;
+//Выведите имя сотрудника и дату его прихода на работу в формате: 21st of June, 2007
+select first_name, last_name, to_char(hire_date, 'fmDdTH" of "Month," "YYYY') from employees;
+//Получите список работников с увеличенными зарплатами на 20%. Зарплату показать в формате: $28,800.00
+select first_name, last_name, to_char(salary*100/20,'$9999,999.99') as salary from employees;
+//Выведите актуальную дату (нынешнюю), + секунда, + минута, + час, + день, + месяц, + год. (Всё это по отдельности прибавляется к актуальной дате)
+select to_char(sysdate)||' '|| to_char(sysdate, 'ss')||' '|| to_char(sysdate, 'mi')||' '|| to_char(sysdate, 'hh')||' '|| to_char(sysdate, 'dd')
+||' '|| to_char(sysdate, 'mm')||' '|| to_char(sysdate, 'yy') as datee from dual;
+//Выведите имя сотрудника, его з/п и новую з/п, которая равна старой плюс это значение текста «$12,345.55».
+select first_name, last_name, salary, salary+to_number('$12,345.55','$99999999999.999') as new_salary from employees;
+//Выведите имя сотрудника, день его трудоустройства, а также количество месяцев между днём его трудоустройства и датой, которую 
+//необходимо получить из текста «SEP, 18:45:00 18 2009»
+select first_name, last_name, hire_date, trunc(months_between(to_date('SEP, 18:45:00 18 2009','MON, HH24:MI:SS DD YYYY' ),hire_date)) as months from employees;
+//Выведите имя сотрудника, его з/п, а также полную з/п (salary + commission_pct(%)) в формате: $24,000.00
+select first_name, last_name, to_char(NVL2(commission_pct,salary+salary*commission_pct,salary),'$999999999999,999.99') as salary from employees;
+//.Выведите имя сотрудника, его фамилию, а также выражение «different length», если длина имени не равна длине фамилии или выражение 
+//«same length», если длина имени равна длине фамилии. Не используйте conditional functions
+select first_name, last_name,NVL2(NULLIF(length(first_name),length(last_name)),'different length','same length') from employees;
+//Выведите имя сотрудника, его комиссионные, а также информацию о  наличии бонусов к зарплате – есть ли у него комиссионные (Yes/No)
+select first_name, last_name, commission_pct, NVL2(commission_pct,'Yes','No') from employees;
+//Выведите имя сотрудника и значение которое его будет характеризовать: значение комиссионных, если присутствует, если нет, то id его менеджера, если и оно отсутствует, то его з/п.
+select first_name, last_name, NVL2(commission_pct,commission_pct,NVL2(manager_id,manager_id,salary))from employees;
+//Для каждой страны показать регион, в котором она находится: 1-Europe, 2-America, 3-Asia, 4-Africa . Выполнить данное задание, не используя функционал JOIN. Используйте DECODE
+select country_name, Decode(region_id,1,'Europe',2,'America', 3,'Asia',4,'Africa') as region from countries;
+//Для каждой страны показать регион, в котором она находится: 1-Europe, 2-America, 3-Asia, 4-Africa . Выполнить данное задание, не используя функционал JOIN. Используйте case
+select country_name, 
+case region_id
+when  1 then 'Europe'
+when  2 then 'America'
+when  3 then 'Asia'
+when  4 then 'Africa'
+end  as region
+from countries;
